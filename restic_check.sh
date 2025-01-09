@@ -3,7 +3,7 @@
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
 #
-# restic-check v.1.11
+# restic-check v.1.11.1
 #
 
 SESS=$RANDOM
