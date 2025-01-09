@@ -2,8 +2,9 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
+VERSION=v.1.11.1
 #
-# restic-check v.1.11.1
+# restic-check $VERSION
 #
 
 SESS=$RANDOM
@@ -60,15 +61,20 @@ EOF
 if [ -n "$1" ]; then
   while [ -n "$1" ]; do
     case "$1" in
+      -v|--version)
+        echo "$0 $VERSION"
+        exit
+      ;;
       --update)
         runSelfUpdate
-      exit
+        exit
       ;;
       -h|--help)
         echo "Use: $0 [TYPE_BACKUP] [OPTION]"
         echo "Type backup:"
         echo "-l         | --local               Local backup"
         echo "-r         | --remote              Remote backup"
+        echo "-v         | --version             Version"
         echo "Option:"
         echo "-sn        | --snapshots           All backups snapshots (default)"
         echo "-snl       | --snapshots-latest    Latest backups snapshot"
@@ -76,8 +82,9 @@ if [ -n "$1" ]; then
         echo "-stl       | --stats-latest        Latest backups stats"
         echo "-u         | --unlock              Unlock backup"
         echo "-id <ctid> | --ctid <ctid>         Container name"
+        echo "-id <ctid> | --ctid <ctid>         Container name"
         echo ""
-        echo "For self-update use: $0 update"
+        echo "For self-update use: $0 --update"
         exit
       ;;
       -l|--local)
