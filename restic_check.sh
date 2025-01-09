@@ -9,6 +9,7 @@ PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 SESS=$RANDOM
 LOCATION=/srv/southbridge
 OPT=""
+URL_UPDATE="https://raw.githubusercontent.com/integral0/scripts/refs/heads/main/restic_check.sh"
 
 # Echo with timestamp
 function echo_ts {
@@ -21,9 +22,48 @@ function die {
     exit 1;
 }
 
+function runSelfUpdate {
+  echo "Performing self-update..."
+
+  # Download new version
+  echo -n "Downloading latest version..."
+  if ! wget --quiet --output-document="$0.tmp" $URL_UPDATE ; then
+    echo "Failed: Error while trying to wget new version!"
+    echo "File requested: $URL_UPDATE"
+    exit 1
+  fi
+  echo "Done."
+
+  # Copy over modes from old version
+  OCTAL_MODE=$(stat -c '%a' $SELF)
+  if ! chmod $OCTAL_MODE "$0.tmp" ; then
+    echo "Failed: Error while trying to set mode on $0.tmp."
+    exit 1
+  fi
+
+  # Spawn update script
+  cat > updateScript.sh << EOF
+#!/bin/bash
+# Overwrite old file with new
+if mv "$0.tmp" "$0"; then
+  echo "Done. Update complete."
+  rm \$0
+else
+  echo "Failed!"
+fi
+EOF
+
+  echo -n "Inserting update process..."
+  exec /bin/bash updateScript.sh
+}
+
 if [ -n "$1" ]; then
   while [ -n "$1" ]; do
     case "$1" in
+      --update)
+        runSelfUpdate
+      exit
+      ;;
       -h|--help)
         echo "Use: $0 [TYPE_BACKUP] [OPTION]"
         echo "Type backup:"
@@ -36,6 +76,8 @@ if [ -n "$1" ]; then
         echo "-stl       | --stats-latest        Latest backups stats"
         echo "-u         | --unlock              Unlock backup"
         echo "-id <ctid> | --ctid <ctid>         Container name"
+        echo ""
+        echo "Use: $0 update"
         exit
       ;;
       -l|--local)
