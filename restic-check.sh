@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.11.3
+VERSION=v.1.11.4
 #
 # restic-check $VERSION
 #
