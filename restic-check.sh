@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.11.4
+VERSION=v.1.11.5
 #
 # restic-check $VERSION
 #
@@ -115,6 +115,9 @@ if [ -n "$1" ]; then
       -u|--unlock)
         #shift
         OPT="unlock"
+      ;;
+      -c|--check)
+        OPT="check"
       ;;
       -id|--ctid)
         shift
