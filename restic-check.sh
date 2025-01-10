@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.11.6
+VERSION=v.1.11.7
 #
 # restic-check $VERSION
 #
@@ -71,7 +71,10 @@ if [ -n "$1" ]; then
         exit
       ;;
       -h|--help)
+        echo "Use: $0 [GLOBAL OPTION]"
+        echo "or"
         echo "Use: $0 [TYPE_BACKUP] [OPTION] [FLAGS]"
+        echo ""
         echo "Type backup:"
         echo "-l         | --local               Local backup"
         echo "-r         | --remote              Remote backup"
@@ -84,10 +87,12 @@ if [ -n "$1" ]; then
         echo "-u         | --unlock              Unlock repo"
         echo "-c         | --check               Check repo"
         echo "-r         | --repair              Repair repo"
+        echo ""
         echo "Flags:"
         echo "-id <ctid> | --ctid <ctid>         Container name"
         echo ""
         echo "Global option:"
+        echo "-h         | --help                Help page"
         echo "-v         | --version             Version"
         echo "           | --update              For self-update this script"
         exit
