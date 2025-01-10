@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.11.5
+VERSION=v.1.11.6
 #
 # restic-check $VERSION
 #
@@ -71,21 +71,25 @@ if [ -n "$1" ]; then
         exit
       ;;
       -h|--help)
-        echo "Use: $0 [TYPE_BACKUP] [OPTION]"
+        echo "Use: $0 [TYPE_BACKUP] [OPTION] [FLAGS]"
         echo "Type backup:"
         echo "-l         | --local               Local backup"
         echo "-r         | --remote              Remote backup"
-        echo "-v         | --version             Version"
+        echo ""
         echo "Option:"
         echo "-sn        | --snapshots           All backups snapshots (default)"
         echo "-snl       | --snapshots-latest    Latest backups snapshot"
         echo "-st        | --stats               All backups stats"
         echo "-stl       | --stats-latest        Latest backups stats"
-        echo "-u         | --unlock              Unlock backup"
-        echo "-id <ctid> | --ctid <ctid>         Container name"
+        echo "-u         | --unlock              Unlock repo"
+        echo "-c         | --check               Check repo"
+        echo "-r         | --repair              Repair repo"
+        echo "Flags:"
         echo "-id <ctid> | --ctid <ctid>         Container name"
         echo ""
-        echo "For self-update use: $0 --update"
+        echo "Global option:"
+        echo "-v         | --version             Version"
+        echo "           | --update              For self-update this script"
         exit
       ;;
       -l|--local)
@@ -97,27 +101,25 @@ if [ -n "$1" ]; then
         BACKUP_TYPE="remote"
       ;;
       -sn|--snapshot)
-        #shift
         OPT="snapshots"
       ;;
       -snl|--snapshots-latest)
-        #shift
         OPT="snapshots latest"
       ;;
       -st|--stats)
-        #shift
         OPT="stats --mode raw-data"
       ;;
       -stl|--stats-latest)
-        #shift
         OPT="stats latest --mode raw-data"
       ;;
       -u|--unlock)
-        #shift
         OPT="unlock"
       ;;
       -c|--check)
         OPT="check"
+      ;;
+      -r|--repair)
+        OPT="repair"
       ;;
       -id|--ctid)
         shift
