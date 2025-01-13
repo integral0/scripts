@@ -2,12 +2,13 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.11.7
+VERSION=v.1.12.0
 #
 # restic-check $VERSION
 #
 
 SESS=$RANDOM
+HN=$(hostname -f 2>/dev/null)
 LOCATION=/srv/southbridge
 OPT=""
 #URL_UPDATE="https://raw.githubusercontent.com/integral0/scripts/refs/heads/main/restic_check.sh"
@@ -140,7 +141,7 @@ if [ -f /etc/cron.d/mcbackups ]; then
   source ${LOCATION}/etc/mc-restic-backup.conf
   echo_ts "Nspawn backup detected."
   if [ -z "$CUSTOM_CTID" ];then CTIDs=$(mctl list | grep -v ^NAME | awk '{print $1}'); else CTIDs=$CUSTOM_CTID; fi
-  for CTID in $CTIDs; do
+  for CTID in $CTIDs ${HN}_etc; do
     if [ "$BACKUP_TYPE" == "local" ];then
       echo_ts "Check LOCAL backup: ${LOCAL_DIR}/${CTID} (${OPT:-snapshots})"
       if [ -d "${LOCAL_DIR}/${CTID}" ];then
@@ -166,7 +167,7 @@ elif [ -f /etc/cron.d/vzbackups ];then
   source ${LOCATION}/etc/vz-restic-backup.conf
   echo_ts "OpenVZ backup detected."
   if [ -z "$CUSTOM_CTID" ];then CTIDs=$(vzlist -H | awk '{print $1}');  else CTIDs=$CUSTOM_CTID; fi
-  for CTID in $CTIDs; do
+  for CTID in $CTIDs ${HN}_etc; do
     if [ "$BACKUP_TYPE" == "local" ];then
       echo_ts "Check LOCAL backup: ${LOCAL_DIR}/${CTID} (${OPT:-snapshots})"
       if [ -d "${LOCAL_DIR}/${CTID}" ];then
