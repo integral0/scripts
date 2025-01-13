@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.12.0
+VERSION=v.1.12.1
 #
 # restic-check $VERSION
 #
@@ -12,7 +12,7 @@ HN=$(hostname -f 2>/dev/null)
 LOCATION=/srv/southbridge
 OPT=""
 #URL_UPDATE="https://raw.githubusercontent.com/integral0/scripts/refs/heads/main/restic_check.sh"
-URL_UPDATE="https://raw.githubusercontent.com/integral0/scripts/refs/heads/main/restic-check.sh"
+URL_UPDATE="https://raw.github.com/integral0/scripts/main/restic-check.sh"
 
 # Echo with timestamp
 function echo_ts {
