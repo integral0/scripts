@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.12.3
+VERSION=v.1.12.4
 #
 # restic-check $VERSION
 #
@@ -143,22 +143,28 @@ if [ -f /etc/cron.d/mcbackups ]; then
   if [ -z "$CUSTOM_CTID" ];then CTIDs=$(mctl list | grep -v ^NAME | awk '{print $1}'); else CTIDs=$CUSTOM_CTID; fi
   for CTID in $CTIDs ${HN}_etc; do
     if [ "$BACKUP_TYPE" == "local" ];then
-      echo_ts "Check LOCAL backup: ${LOCAL_DIR}/${CTID} (${OPT:-snapshots})"
-      if [ -d "${LOCAL_DIR}/${CTID}" ];then
+      if [[ -d "${LOCAL_DIR}/${CTID}" ]] && [[ $(echo $CTIDS_EXCLUDE| grep "$CTID" | wc -l) -eq 0 ]];then
+        echo_ts "CHECK local backup: ${CTID}"
         export RESTIC_PASSWORD=${LOCAL_PASSWORD}
         LLOG=$(set -x; restic -r ${LOCAL_DIR}/${CTID} ${OPT:-snapshots}; set +x)
         echo "$LLOG"
+      elif [[ ! -d "${LOCAL_DIR}/${CTID}" ]] && [[ $(echo $CTIDS_EXCLUDE| grep "$CTID" | wc -l) -gt 0 ]];then
+        echo_ts "SKIP local backup: $CTID excluded"
       else
-        echo_ts "backup ${LOCAL_DIR}/${CTID} not found"
+        echo_ts "Backup ${LOCAL_DIR}/${CTID} not found"
       fi
     elif [ "$BACKUP_TYPE" == "remote" ];then
       for REMOTE_BACKUP_HOST in ${REMOTE_BACKUP_HOSTS}; do
-        echo_ts "Check REMOTE backup: ${REMOTE_BACKUP_HOST}/${CTID} (${OPT:-snapshots})"
-        LOCAL_AUTH_CONFIG="$LOCATION/etc/mc-restic-url-"$(echo -n "$REMOTE_BACKUP_HOST" | sha256sum | awk '{print $1}')".conf"
-        source $LOCAL_AUTH_CONFIG 2>/dev/null
-        export RESTIC_PASSWORD=${REMOTE_BACKUP_PASSWORD}
-        LLOG=$(set -x; restic -r ${REMOTE_BACKUP_HOST}/${CTID} ${OPT:-snapshots}; set +x)
-        echo "$LLOG"
+        if [[ $(echo $CTIDS_EXCLUDE| grep "$CTID" | wc -l) -eq 0 ]]; then
+          echo_ts "CHECK remote backup: ${CTID}"
+          LOCAL_AUTH_CONFIG="$LOCATION/etc/mc-restic-url-"$(echo -n "$REMOTE_BACKUP_HOST" | sha256sum | awk '{print $1}')".conf"
+          source $LOCAL_AUTH_CONFIG 2>/dev/null
+          export RESTIC_PASSWORD=${REMOTE_BACKUP_PASSWORD}
+          LLOG=$(set -x; restic -r ${REMOTE_BACKUP_HOST}/${CTID} ${OPT:-snapshots}; set +x)
+          echo "$LLOG"
+        else
+           echo_ts "SKIP remote backup: $CTID excluded"
+        fi
       done
     fi
   done
