@@ -31,16 +31,16 @@ function die {
 
 function runSelfUpdate {
   echo_ts "Performing self-update..."
-  echo_ts "Current version $VERSION"
+  echo_ts "Check current version... $VERSION"
   # Download new version
-  echo_tsn "Downloading latest version..."
+  echo_tsn "Check latest version..."
   if ! wget --quiet --output-document="$0.tmp" $URL_UPDATE ; then
     echo_ts "Failed: Error while trying to wget new version!"
     echo_ts "File requested: $URL_UPDATE"
     exit 1
   fi
   NEW_VERSION=$(cat $0.tmp 2>/dev/null | grep ^VERSION | awk -F'=' '{print $2}')
-  echo "Done. $NEW_VERSION"
+  echo "$NEW_VERSION"
   if [ "${VERSION}" == "${NEW_VERSION}" ];then
     echo_ts "SKIP. This script latest version."
     break;
