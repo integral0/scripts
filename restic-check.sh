@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.13.2
+VERSION=v.1.13.3
 #
 # restic-check $VERSION
 #
@@ -33,7 +33,7 @@ function runSelfUpdate {
   echo_ts "Performing self-update..."
   echo_ts  "Check current version... $VERSION"
   # Download new version
-  echo_tsn "Check latest version... "
+  echo_tsn "Check latest version...  "
   if ! wget --quiet --output-document="$0.tmp" $URL_UPDATE ; then
     echo_ts "Failed: Error while trying to wget new version!"
     echo_ts "File requested: $URL_UPDATE"
