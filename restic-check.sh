@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.13.3
+VERSION=v.1.13.4
 #
 # restic-check $VERSION
 #
@@ -48,7 +48,7 @@ function runSelfUpdate {
   # Copy over modes from old version
   OCTAL_MODE=$(stat -c '%a' $0)
   if ! chmod $OCTAL_MODE "$0.tmp" ; then
-    echo "Failed: Error while trying to set mode on $0.tmp."
+    echo_ts "Failed: Error while trying to set mode on $0.tmp."
     exit 1
   fi
 
@@ -64,7 +64,7 @@ else
 fi
 EOF
 
-  echo -n "Inserting update process..."
+  echo_tsn "Inserting update process..."
   exec /bin/bash updateScript.sh
 }
 
