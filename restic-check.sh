@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.12.4
+VERSION=v.1.13.0
 #
 # restic-check $VERSION
 #
@@ -19,6 +19,10 @@ function echo_ts {
     echo -e "$(date "+%F %T [$SESS]")": "$1"
 }
 
+function echo_tsn {
+    echo -n "$(date "+%F %T [$SESS]")": "$1"
+}
+
 # Nice debugging messages
 function die {
     echo_ts "Error: $1" >&2
@@ -26,17 +30,21 @@ function die {
 }
 
 function runSelfUpdate {
-  echo "Performing self-update..."
-
+  echo_ts "Performing self-update..."
+  echo_ts "Current version $VERSION"
   # Download new version
-  echo -n "Downloading latest version..."
+  echo_tsn "Downloading latest version..."
   if ! wget --quiet --output-document="$0.tmp" $URL_UPDATE ; then
-    echo "Failed: Error while trying to wget new version!"
-    echo "File requested: $URL_UPDATE"
+    echo_ts "Failed: Error while trying to wget new version!"
+    echo_ts "File requested: $URL_UPDATE"
     exit 1
   fi
-  echo "Done."
-
+  NEW_VERSION=$(cat $0.tmp 2>/dev/null | grep ^VERSION | awk -F'=' '{print $2}')
+  echo "Done. $NEW_VERSION"
+  if [ "${VERSION}" == "${NEW_VERSION}" ];then
+    echo_ts "SKIP. This script latest version."
+    break;
+  fi
   # Copy over modes from old version
   OCTAL_MODE=$(stat -c '%a' $0)
   if ! chmod $OCTAL_MODE "$0.tmp" ; then
