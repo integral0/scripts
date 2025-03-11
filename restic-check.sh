@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.12.2
+VERSION=v.1.12.3
 #
 # restic-check $VERSION
 #
@@ -166,7 +166,7 @@ elif [ -f /etc/cron.d/vzbackups ];then
   source ${LOCATION}/etc/vz-restic-backup.conf.dist
   source ${LOCATION}/etc/vz-restic-backup.conf
   echo_ts "OpenVZ backup detected."
-  if [ -z "$CUSTOM_CTID" ];then CTIDs=$(/bin/ls -1 ${CT_PRIVATE});  else CTIDs=$CUSTOM_CTID; fi
+  if [ -z "$CUSTOM_CTID" ];then CTIDs=$([[ -d /vz/private/ ]]&& cd /vz/private/ && echo *); else CTIDs=$CUSTOM_CTID; fi
   for CTID in $CTIDs ${HN}_etc; do
     if [ "$BACKUP_TYPE" == "local" ];then
       echo_ts "Check LOCAL backup: ${LOCAL_DIR}/${CTID} (${OPT:-snapshots})"
