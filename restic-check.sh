@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.13.6
+VERSION=v.1.13.7
 #
 # restic-check $VERSION
 #
@@ -187,8 +187,8 @@ elif [ -f /etc/cron.d/vzbackups ];then
   source ${LOCATION}/etc/vz-restic-backup.conf
   echo_ts "OpenVZ backup detected."
   if [ -z "$CUSTOM_CTID" ];then CTIDs=$([[ -d /vz/private/ ]]&& cd /vz/private/ && echo *); else CTIDs=$CUSTOM_CTID; fi
-  for CTID in $CTIDs ${HN}_etc; do
-    if [ "$BACKUP_TYPE" == "local" ];then
+  if [ "$BACKUP_TYPE" == "local" -a -n "$LOCAL_DIR" ];then
+    for CTID in $CTIDs; do
       echo_ts "Check LOCAL backup: ${LOCAL_DIR}/${CTID} (${OPT:-snapshots})"
       if [ -d "${LOCAL_DIR}/${CTID}" ];then
         export RESTIC_PASSWORD=${LOCAL_PASSWORD}
@@ -197,7 +197,11 @@ elif [ -f /etc/cron.d/vzbackups ];then
       else
         echo_ts "backup ${LOCAL_DIR}/${CTID} not found"
       fi
-    elif [ "$BACKUP_TYPE" == "remote" ];then
+    done
+  elif [ "$BACKUP_TYPE" == "local" -a -z "$LOCAL_DIR" ];then
+    echo_ts "SKIP. Local backup is DISABLED"
+  elif [ "$BACKUP_TYPE" == "remote" ];then
+    for CTID in $CTIDs ${HN}_etc; do
       for REMOTE_BACKUP_HOST in ${REMOTE_BACKUP_HOSTS}; do
         echo_ts "Check REMOTE backup: ${REMOTE_BACKUP_HOST}/${CTID} (${OPT:-snapshots})"
         LOCAL_AUTH_CONFIG="$LOCATION/etc/vz-restic-url-"$(echo -n "$REMOTE_BACKUP_HOST" | sha256sum | awk '{print $1}')".conf"
@@ -206,8 +210,9 @@ elif [ -f /etc/cron.d/vzbackups ];then
         LLOG=$(set -x; restic -r ${REMOTE_BACKUP_HOST}/${CTID} ${OPT:-snapshots}; set +x)
         echo "$LLOG"
       done
-    fi
-  done
+    done
+  fi
+
 elif [ -f /etc/cron.d/dsbackups ]; then
   source ${LOCATION}/etc/ds-restic-backup.conf.dist
   source ${LOCATION}/etc/ds-restic-backup.conf
