@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.13.5
+VERSION=v.1.13.6
 #
 # restic-check $VERSION
 #
@@ -149,8 +149,9 @@ if [ -f /etc/cron.d/mcbackups ]; then
   source ${LOCATION}/etc/mc-restic-backup.conf
   echo_ts "Nspawn backup detected."
   if [ -z "$CUSTOM_CTID" ];then CTIDs=$(mctl list | grep -v ^NAME | awk '{print $1}'); else CTIDs=$CUSTOM_CTID; fi
-  for CTID in $CTIDs ${HN}_etc; do
-    if [ "$BACKUP_TYPE" == "local" ];then
+
+  if [ "$BACKUP_TYPE" == "local" -a -n "$LOCAL_DIR" ];then
+    for CTID in $CTIDs; do
       if [[ -d "${LOCAL_DIR}/${CTID}" ]] && [[ $(echo $CTIDS_EXCLUDE| grep "$CTID" | wc -l) -eq 0 ]];then
         echo_ts "CHECK local backup: ${CTID}"
         export RESTIC_PASSWORD=${LOCAL_PASSWORD}
@@ -161,7 +162,11 @@ if [ -f /etc/cron.d/mcbackups ]; then
       else
         echo_ts "Backup ${LOCAL_DIR}/${CTID} not found"
       fi
-    elif [ "$BACKUP_TYPE" == "remote" ];then
+    done
+  elif [ "$BACKUP_TYPE" == "local" -a -z "$LOCAL_DIR" ];then
+    echo_ts "SKIP. Local backup is DISABLED"
+  elif [ "$BACKUP_TYPE" == "remote" ];then
+    for CTID in $CTIDs ${HN}_etc; do
       for REMOTE_BACKUP_HOST in ${REMOTE_BACKUP_HOSTS}; do
         if [[ $(echo $CTIDS_EXCLUDE| grep "$CTID" | wc -l) -eq 0 ]]; then
           echo_ts "CHECK remote backup: ${CTID}"
@@ -174,8 +179,9 @@ if [ -f /etc/cron.d/mcbackups ]; then
            echo_ts "SKIP remote backup: $CTID excluded"
         fi
       done
-    fi
-  done
+    done
+  fi
+
 elif [ -f /etc/cron.d/vzbackups ];then
   source ${LOCATION}/etc/vz-restic-backup.conf.dist
   source ${LOCATION}/etc/vz-restic-backup.conf
