@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.13.7
+VERSION=v.1.13.8
 #
 # restic-check $VERSION
 #
@@ -43,7 +43,7 @@ function runSelfUpdate {
   echo "$NEW_VERSION"
   if [ "${VERSION}" == "${NEW_VERSION}" ];then
     echo_ts "SKIP. This script latest version."
-    break;
+    return;
   fi
   # Copy over modes from old version
   OCTAL_MODE=$(stat -c '%a' $0)
