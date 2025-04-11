@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.13.8
+VERSION=v.1.13.9
 #
 # restic-check $VERSION
 #
@@ -93,9 +93,9 @@ if [ -n "$1" ]; then
         echo "-snl       | --snapshots-latest    Latest backups snapshot"
         echo "-st        | --stats               All backups stats"
         echo "-stl       | --stats-latest        Latest backups stats"
-        echo "-u         | --unlock              Unlock repo"
-        echo "-c         | --check               Check repo"
-        echo "-r         | --repair              Repair repo"
+        echo "           | --unlock              Unlock repo"
+        echo "           | --check               Check repo"
+        echo "           | --repair              Repair repo"
         echo ""
         echo "Flags:"
         echo "-id <ctid> | --ctid <ctid>         Container name"
@@ -126,13 +126,13 @@ if [ -n "$1" ]; then
       -stl|--stats-latest)
         OPT="stats latest --mode raw-data"
       ;;
-      -u|--unlock)
+      --unlock)
         OPT="unlock"
       ;;
-      -c|--check)
+      --check)
         OPT="check"
       ;;
-      -r|--repair)
+      --repair)
         OPT="repair"
       ;;
       -id|--ctid)
@@ -148,10 +148,16 @@ if [ -f /etc/cron.d/mcbackups ]; then
   source ${LOCATION}/etc/mc-restic-backup.conf.dist
   source ${LOCATION}/etc/mc-restic-backup.conf
   echo_ts "Nspawn backup detected."
-  if [ -z "$CUSTOM_CTID" ];then CTIDs=$(mctl list | grep -v ^NAME | awk '{print $1}'); else CTIDs=$CUSTOM_CTID; fi
+  if [ -z "$CUSTOM_CTID" ]; then
+    CTIDs_LOCAL=$(mctl list | grep -v ^NAME | awk '{print $1}')
+    CTIDs_REMOTE="$CTIDs_LOCAL ${HN}_etc"
+  else
+    CTIDs_LOCAL=${CUSTOM_CTID}
+    CTIDs_REMOTE=${CUSTOM_CTID}
+  fi
 
   if [ "$BACKUP_TYPE" == "local" -a -n "$LOCAL_DIR" ];then
-    for CTID in $CTIDs; do
+    for CTID in $CTIDs_LOCAL; do
       if [[ -d "${LOCAL_DIR}/${CTID}" ]] && [[ $(echo $CTIDS_EXCLUDE| grep "$CTID" | wc -l) -eq 0 ]];then
         echo_ts "CHECK local backup: ${CTID}"
         export RESTIC_PASSWORD=${LOCAL_PASSWORD}
@@ -166,9 +172,9 @@ if [ -f /etc/cron.d/mcbackups ]; then
   elif [ "$BACKUP_TYPE" == "local" -a -z "$LOCAL_DIR" ];then
     echo_ts "SKIP. Local backup is DISABLED"
   elif [ "$BACKUP_TYPE" == "remote" ];then
-    for CTID in $CTIDs ${HN}_etc; do
+    for CTID in $CTIDs_REMOTE; do
       for REMOTE_BACKUP_HOST in ${REMOTE_BACKUP_HOSTS}; do
-        if [[ $(echo $CTIDS_EXCLUDE| grep "$CTID" | wc -l) -eq 0 ]]; then
+        if [[ $(echo $CTIDS_EXCLUDE_REMOTE| grep "$CTID" | wc -l) -eq 0 ]]; then
           echo_ts "CHECK remote backup: ${CTID}"
           LOCAL_AUTH_CONFIG="$LOCATION/etc/mc-restic-url-"$(echo -n "$REMOTE_BACKUP_HOST" | sha256sum | awk '{print $1}')".conf"
           source $LOCAL_AUTH_CONFIG 2>/dev/null
