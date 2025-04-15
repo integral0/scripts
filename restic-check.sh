@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.14.0
+VERSION=v.1.15.0
 #
 # restic-check $VERSION
 #
@@ -187,8 +187,30 @@ if [ -f /etc/cron.d/mcbackups ]; then
       done
     done
   fi
+fi
 
-elif [ -f /etc/cron.d/vzbackups ];then
+### Files Backup
+if [ -f /etc/cron.d/filebackups ]; then
+  source ${LOCATION}/etc/file-restic-backup.conf.dist
+  source ${LOCATION}/etc/file-restic-backup.conf
+  echo_ts "Custom files backup detected."
+
+  if [ "$BACKUP_TYPE" == "local" ];then
+    echo_ts "SKIP. Local backup is DISABLED"
+  elif [ "$BACKUP_TYPE" == "remote" ];then
+      for REMOTE_BACKUP_HOST in ${REMOTE_BACKUP_HOSTS}; do
+          echo_ts "CHECK remote files backup: ${REMOTE_BACKUP_PATH}"
+          LOCAL_AUTH_CONFIG="$LOCATION/etc/file-restic-url-"$(echo -n "$REMOTE_BACKUP_HOST" | sha256sum | awk '{print $1}')".conf"
+          source $LOCAL_AUTH_CONFIG 2>/dev/null
+          export RESTIC_PASSWORD=${REMOTE_BACKUP_PASSWORD}
+          LLOG=$(set -x; restic -r ${REMOTE_BACKUP_HOST} ${OPT:-snapshots}; set +x)
+          echo "$LLOG"
+      done
+  fi
+fi
+
+### VZ Backup
+if [ -f /etc/cron.d/vzbackups ];then
   source ${LOCATION}/etc/vz-restic-backup.conf.dist
   source ${LOCATION}/etc/vz-restic-backup.conf
   echo_ts "OpenVZ backup detected."
@@ -218,8 +240,10 @@ elif [ -f /etc/cron.d/vzbackups ];then
       done
     done
   fi
+fi
 
-elif [ -f /etc/cron.d/dsbackups ]; then
+### DS Backup
+if [ -f /etc/cron.d/dsbackups ]; then
   source ${LOCATION}/etc/ds-restic-backup.conf.dist
   source ${LOCATION}/etc/ds-restic-backup.conf
   echo_ts "VDS backup detected"
@@ -235,6 +259,4 @@ elif [ -f /etc/cron.d/dsbackups ]; then
       echo "$LLOG"
     done
   fi
-else
-  die "unknown error. exit."
 fi
