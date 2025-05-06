@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.1.15.0
+VERSION=v.1.16.0
 #
 # restic-check $VERSION
 #
@@ -89,21 +89,22 @@ if [ -n "$1" ]; then
         echo "-r         | --remote              Remote backup"
         echo ""
         echo "Option:"
-        echo "-sn        | --snapshots           All backups snapshots (default)"
-        echo "-snl       | --snapshots-latest    Latest backups snapshot"
-        echo "-st        | --stats               All backups stats"
-        echo "-stl       | --stats-latest        Latest backups stats"
-        echo "           | --unlock              Unlock repo"
-        echo "           | --check               Check repo"
-        echo "           | --repair              Repair repo"
+        echo "-sn                      | --snapshots           All backups snapshots (default)"
+        echo "-snl                     | --snapshots-latest    Latest backups snapshot"
+        echo "-st                      | --stats               All backups stats"
+        echo "-stl                     | --stats-latest        Stats for latest snapshot"
+        echo "-ls <id snapshot> <path> |                       List files for lastest snapshot"
+        echo "                         | --unlock              Unlock repo"
+        echo "                         | --check               Check repo"
+        echo "                         | --repair              Repair repo"
         echo ""
         echo "Flags:"
-        echo "-id <ctid> | --ctid <ctid>         Container name"
+        echo "-id <ctid>               | --ctid <ctid>         Container name"
         echo ""
         echo "Global option:"
-        echo "-h         | --help                Help page"
-        echo "-v         | --version             Version"
-        echo "           | --update              For self-update this script"
+        echo "-h                       | --help                Help page"
+        echo "-v                       | --version             Version"
+        echo "                         | --update              For self-update this script"
         exit
       ;;
       -l|--local)
@@ -125,6 +126,13 @@ if [ -n "$1" ]; then
       ;;
       -stl|--stats-latest)
         OPT="stats latest --mode raw-data"
+      ;;
+      -ls|--list)
+        shift
+        LIST_SNAPSHOT="$1"
+        shift
+        LIST_PATH="$1"
+        OPT="ls ${LIST_SNAPSHOT} /${CUSTOM_CTID}${LIST_PATH}"
       ;;
       --unlock)
         OPT="unlock"
