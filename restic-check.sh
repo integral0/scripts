@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.2.1.1
+VERSION=v.2.1.2
 #
 # restic-check $VERSION
 #
@@ -43,6 +43,7 @@ function runSelfUpdate {
   echo "$NEW_VERSION"
   if [ "${VERSION}" == "${NEW_VERSION}" ];then
     echo_ts "SKIP. This script latest version."
+    rm -f "$0.tmp"
     return;
   fi
   # Copy over modes from old version
