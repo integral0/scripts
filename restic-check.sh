@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.2.1.3
+VERSION=v.2.1.4
 #
 # restic-check $VERSION
 #
@@ -165,19 +165,21 @@ function dsbackup_conf {
   if (( $RESTIC )); then
     . "$LOCATION/etc/ds-restic-backup.conf.dist"
     . "$LOCATION/etc/ds-restic-backup.conf"
+    echo
     if [ -z "$REMOTE_BACKUP_HOSTS" ]; then
-      echo_ts "Backup disabled"
+      echo "Backup disabled"
     else
-      echo_ts "Remote backup repo: $REMOTE_BACKUP_HOSTS"
+      echo "Remote backup repo: $REMOTE_BACKUP_HOSTS"
     fi
   else
     . "$LOCATION/etc/ds-backup.conf.dist"
     . "$LOCATION/etc/ds-backup.conf"
+    echo
     if [ -z "$REMOTE_HOSTS" ]; then
-      echo_ts "Backup disabled"
+      echo "Backup disabled"
     else
       for REMOTE_HOST in $REMOTE_HOSTS; do
-        echo_ts "Remote backup repo: $USERNAME@$REMOTE_HOST::$REMOTE_DIR/$REMOTEHOSTDIR"
+        echo  "Remote backup repo: $USERNAME@$REMOTE_HOST::$REMOTE_DIR/$REMOTEHOSTDIR"
       done
     fi
   fi
