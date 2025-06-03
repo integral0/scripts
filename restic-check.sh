@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.2.1.0
+VERSION=v.2.1.1
 #
 # restic-check $VERSION
 #
@@ -97,7 +97,7 @@ if [ -n "$1" ]; then
         echo "-snl                     | --snapshots-latest    Latest backups snapshot"
         echo "-st                      | --stats               All backups stats"
         echo "-stl                     | --stats-latest        Stats for latest snapshot"
-        echo "-ls <id snapshot> <path> |                       List files for lastest snapshot"
+        echo "-ls <id snapshot> <path> |                       List files for <id snapshot> and <path>"
         echo "                         | --unlock              Unlock repo"
         echo "                         | --check               Check repo"
         echo "                         | --repair              Repair repo"
