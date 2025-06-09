@@ -1,17 +1,24 @@
 #!/bin/bash
 
-PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
+VERSION=v.2.2.0
+#
+# show_backup.sh $VERSION
+#
 
-VERSION=v.2.1.5
-#
-# restic-check $VERSION
-#
+set -o errtrace
+set -o pipefail
+
+readonly PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
 SESS=$RANDOM
 HN=$(hostname -f 2>/dev/null)
 LOCATION=/srv/southbridge
 OPT=""
-URL_UPDATE="https://raw.github.com/integral0/scripts/main/restic-check.sh"
+CUSTOM_CTID="all"
+
+typeset bn=""
+bn="$(basename "$0")"
+readonly bn
 
 # Echo with timestamp
 function echo_ts {
@@ -28,6 +35,7 @@ function die {
     exit 1;
 }
 
+URL_UPDATE="https://raw.github.com/integral0/scripts/main/restic-check.sh"
 function runSelfUpdate {
   echo_ts "Performing self-update..."
   echo_ts  "Check current version... $VERSION"
@@ -68,88 +76,121 @@ EOF
   exec /bin/bash updateScript.sh
 }
 
+
+usage() {
+        echo "Use: $0 [GLOBAL OPTION]"
+        echo "or"
+        echo "Use: $0 [TYPE_BACKUP] [CTID] [OPTION]"
+        echo ""
+        echo "Type backup:"
+        echo "-l              | --local               Local backup"
+        echo "-r              | --remote              Remote backup"
+        echo ""
+        echo "Ctid:"
+        echo "-I <ctid>       | --id <ctid>, --ctid <ctid> Container name"
+        echo ""
+        echo "Option:"
+        echo "-s              | --sn, --snapshots         All backups snapshots (default)"
+        echo "-S              | --snl, --snapshots-latest Latest backups snapshot"
+        echo "-t              | --st, --stats             All backups stats"
+        echo "-T              | --stl, --stats-latest     Stats for latest snapshot"
+        echo "                | --ls <id snapshot> <path> List files for <id snapshot> and <path>"
+        echo "                | --unlock                  Unlock repo"
+        echo "                | --check                   Check repo"
+        echo "                | --repair                  Repair repo"
+        echo ""
+        echo "Global option:"
+        echo "-h              | --help                Help page"
+        echo "-v              | --version             Version"
+        echo "                | --update              Self update"
+}
+
 function read_args() {
-if [ -n "$1" ]; then
-  while [ -n "$1" ]; do
+# Getopts
+getopt -T; (( $? == 4 )) || { echo "incompatible getopt version" >&2; exit 4; }
+
+if ! TEMP=$(getopt -o lrI:sStThv --longoptions local,remote,id:,ctid:,sn,snapshots,snl,snapshots-latest,st,stats,stl,stats-latest,ls:,unlock,check,repair,version,help,update -n "$bn" -- "$@")
+then
+    echo "Terminating..." >&2
+    exit 1
+fi
+
+eval set -- "$TEMP"
+unset TEMP
+
+if [[ -n "$1" ]]; then
+  while [[ "$#" -gt 0 ]]; do
     case "$1" in
+      --)
+        shift
+        break
+      ;;
       -v|--version)
-        echo "$0 $VERSION"
-        exit
+        echo "$bn $VERSION"
+        exit 0
       ;;
       --update)
         runSelfUpdate
         exit
       ;;
       -h|--help)
-        echo "Use: $0 [GLOBAL OPTION]"
-        echo "or"
-        echo "Use: $0 [TYPE_BACKUP] [CTID] [OPTION]"
-        echo ""
-        echo "Type backup:"
-        echo "-l         | --local               Local backup"
-        echo "-r         | --remote              Remote backup"
-        echo ""
-        echo "Ctid:"
-        echo "-id <ctid>               | --ctid <ctid>         Container name"
-        echo ""
-        echo "Option:"
-        echo "-sn                      | --snapshots           All backups snapshots (default)"
-        echo "-snl                     | --snapshots-latest    Latest backups snapshot"
-        echo "-st                      | --stats               All backups stats"
-        echo "-stl                     | --stats-latest        Stats for latest snapshot"
-        echo "-ls <id snapshot> <path> |                       List files for <id snapshot> and <path>"
-        echo "                         | --unlock              Unlock repo"
-        echo "                         | --check               Check repo"
-        echo "                         | --repair              Repair repo"
-        echo ""
-        echo "Global option:"
-        echo "-h                       | --help                Help page"
-        echo "-v                       | --version             Version"
-        echo "                         | --update              For self-update this script"
-        exit
+        usage
+        exit 0
       ;;
       -l|--local)
-        #shift
         BACKUP_TYPE="local"
+        shift
       ;;
       -r|--remote)
-        #shift
         BACKUP_TYPE="remote"
+        shift
       ;;
-      -id|--ctid)
+      -I|--id|--ctid)
         shift
         CUSTOM_CTID="$1"
+        shift
       ;;
-      -sn|--snapshot)
+      -s|--sn|--snapshot)
         OPT="snapshots"
+        shift
       ;;
-      -snl|--snapshots-latest)
+      -S|--snl|--snapshots-latest)
         OPT="snapshots latest"
+        shift
       ;;
-      -st|--stats)
+      -t|--st|--stats)
         OPT="stats --mode raw-data"
+        shift
       ;;
-      -stl|--stats-latest)
+      -T|--stl|--stats-latest)
         OPT="stats latest --mode raw-data"
+        shift
       ;;
-      -ls|--list)
+      --ls)
         shift
         LIST_SNAPSHOT="$1"
-        shift
+        shift 2
         LIST_PATH="$1"
+        if [[ -z "$LIST_SNAPSHOT" || -z "$LIST_PATH" ]]; then
+          echo "Error: --ls requires 2 arguments: <snapshot> <path>" >&2
+          exit 1
+        fi
         OPT="ls ${LIST_SNAPSHOT} /${CUSTOM_CTID}${LIST_PATH}"
+        break
       ;;
       --unlock)
         OPT="unlock"
+        break
       ;;
       --check)
         OPT="check"
+        break
       ;;
       --repair)
-        OPT="repair"
+        OPT="repair snapshots"
+        break
       ;;
     esac
-    shift
   done
 fi
 }
@@ -335,7 +376,7 @@ function dsbackup {
 function mcbackup {
   source ${LOCATION}/etc/mc-restic-backup.conf.dist
   source ${LOCATION}/etc/mc-restic-backup.conf
-  if [ -z "$CUSTOM_CTID" ]; then
+  if [ "$CUSTOM_CTID" == "all" ]; then
     CTIDs_LOCAL=$(mctl list | grep -v ^NAME | awk '{print $1}')
     CTIDs_REMOTE="$CTIDs_LOCAL ${HN}_etc"
   else
