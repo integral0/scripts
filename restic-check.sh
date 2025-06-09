@@ -2,7 +2,7 @@
 
 PATH=/sbin:/usr/sbin:/usr/local/sbin:/bin:/usr/bin:/usr/local/bin
 
-VERSION=v.2.1.4
+VERSION=v.2.1.5
 #
 # restic-check $VERSION
 #
@@ -25,7 +25,7 @@ function echo_tsn {
 # Nice debugging messages
 function die {
     echo_ts "Error: $1" >&2
-    exi_tst 1;
+    exit 1;
 }
 
 function runSelfUpdate {
