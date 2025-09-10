@@ -9,8 +9,9 @@ MAX_STEP=10              # сколько шагов максимум
 START_RPS=50             # начальное кол-во пользователей
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")
 LOG_DIR="./siege_logs/$TIMESTAMP"
-mkdir -p "$LOG_DIR"
 CREDS_FILE="creds.ini"
+
+mkdir -p "$LOG_DIR"
 
 # ======= Авторизация (если есть creds.ini) =======
 if [ -f "$CREDS_FILE" ]; then
